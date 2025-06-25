@@ -10,7 +10,30 @@ An intelligent chatbot-based healthcare system built with **Python**, **Django**
 - 🗂️ Admin Panel & User Dashboard
 
 ## 📸 Screenshots
-*(Add screenshots in `/static/images/` and embed them here)*
+
+Here are the main pages of the AI Healthcare Bot System:
+
+### 🧠 Chatbot Page
+![Chatbot Page](core/static/images/chatbot.jpg)
+
+### 🧠 Chatbot Small (Alternate)
+![Chatbot Small](core/static/images/chatbot-small.jpg)
+
+### 🔍 Prediction Page
+![Prediction Page](core/static/images/predict.jpg)
+
+### 🏥 Hospital/Pharmacy Locator
+![Hospital Banner](core/static/images/Hospital-banner.jpg)
+
+### 🔐 Login/Register Background
+![Form Background](core/static/images/form-bg.jpg)
+
+### 🎨 Backup Background
+![Backup Background](core/static/images/bg-backup.jpg)
+
+### 🌐 Main Background
+![Main Background](core/static/images/bg-main.jpg)
+
 
 ## 💻 Technologies Used
 - Python, Django
