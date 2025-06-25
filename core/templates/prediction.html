@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .prediction-banner {
+    position: relative;
+    background-image: url("{% static 'images/predict.jpg' %}");
+    background-size: contain; /* instead of cover to show full body */
+    background-repeat: no-repeat;
+    background-position: center top;
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #003049;
+    font-size: 36px;
+    font-weight: bold;
+    animation: blinkTitle 3s infinite;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.6);
+    z-index: 1;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    filter: brightness(1.2) contrast(1.1); /* brighter image */
+}
+
+    .prediction-banner::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: -1;
+        border-radius: 12px;
+    }
+
+    @keyframes floatTitle {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-8px); }
+    }
+
+    @keyframes blinkTitle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .floating-line {
+        height: 3px;
+        width: 100%;
+        background: linear-gradient(90deg, #3e8ef7, #89f7fe, #3e8ef7);
+        background-size: 200% auto;
+        animation: flow 2s linear infinite;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+
+    @keyframes flow {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+    }
+
+    .prediction-form {
+        background: rgba(255, 255, 255, 0.97);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        margin-bottom: 40px;
+        transform: perspective(1000px) rotateX(0deg);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .prediction-form:hover {
+        transform: perspective(1000px) rotateX(1deg);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .prediction-form label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .prediction-form input[type="text"] {
+        width: 100%;
+        padding: 20px;
+        font-size: 18px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .prediction-form button,
+    .speech-btn,
+    .mode-toggle {
+        padding: 10px 20px;
+        background-color: #31539e;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        margin: 8px 8px 10px 0;
+        cursor: pointer;
+    }
+
+    .prediction-result {
+        margin-top: 25px;
+        padding: 20px;
+        font-weight: bold;
+        font-size: 18px;
+        background: #f3f9ff;
+        border-left: 5px solid #3e8ef7;
+        border-radius: 12px;
+        box-shadow: 0 16px 30px rgba(62, 142, 247, 0.3);
+        animation: fadeSlideUp 0.6s ease forwards;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .prediction-result:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(62, 142, 247, 0.4);
+    }
+
+    .prediction-result.mild {
+        background-color: #e9fce9;
+        border-left-color: #2ecc71;
+    }
+
+    .prediction-result.warning {
+        background-color: #fffbe6;
+        border-left-color: #f39c12;
+    }
+
+    .prediction-result.danger {
+        background-color: #ffeaea;
+        border-left-color: #e74c3c;
+    }
+
+    @keyframes fadeSlideUp {
+        0% { opacity: 0; transform: translateY(30px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 🎤 Mic button beside input */
+    .mic-btn {
+        margin-left: 10px;
+        padding: 12px;
+        border-radius: 50%;
+        background-color: #ff5252;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* 💬 Floating chatbot icon */
+    .chatbot-float {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background-color: #3e8ef7;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+        z-index: 999;
+    }
+</style>
+
+<div class="prediction-banner">Disease Prediction</div>
+
+<div class="container prediction-form">
+    <div class="floating-line"></div>
+
+    <div class="music-control" style="text-align:right; margin-bottom:15px;">
+        <button onclick="toggleMusic()">🎵 Start Music</button>
+        <button onclick="stopMusic()">⏹️ Stop Music</button>
+        <button class="mode-toggle" onclick="toggleDarkMode()">🌓 Toggle Mode</button>
+        <button class="speech-btn" onclick="speakResult('en')">🔈 Speak English</button>
+        <button class="speech-btn" onclick="speakResult('hi')">🔉 Speak Hindi</button>
+        <button class="speech-btn" onclick="stopVoice()">✋ Stop Voice</button>
+    </div>
+
+    <div id="google_translate_element" style="margin-bottom: 15px;"></div>
+
+    <audio id="bg-music" loop>
+        <source src="{% static 'audio/soft-music.mp3' %}" type="audio/mpeg">
+    </audio>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="symptoms">Enter your symptoms:</label>
+        <div style="display:flex; align-items:center;">
+            <input id="symptoms" name="symptoms" type="text" list="symptom-list" placeholder="E.g., Fever, Chest Pain, Fatigue, etc." required>
+            <button type="button" class="mic-btn" onclick="startVoiceInput()">🎤</button>
+        </div>
+        <datalist id="symptom-list">
+            <option value="Fever">
+            <option value="Cold">
+            <option value="Cough">
+            <option value="Headache">
+            <option value="Flu">
+            <option value="Body Ache">
+            <option value="Fatigue">
+            <option value="Sore Throat">
+            <option value="Shortness of Breath">
+            <option value="Chest Pain">
+            <option value="Dengue">
+            <option value="COVID-19">
+            <option value="Typhoid">
+            <option value="Pneumonia">
+            <option value="Heart Attack">
+            <option value="Heart Problem">
+            <option value="Cancer">
+        </datalist>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if prediction %}
+    <div id="speak-result" class="prediction-result {{ severity }}">
+        {{ prediction|safe }}
+    </div>
+    {% endif %}
+
+    {% if advice %}
+    <div class="prediction-result mild" style="font-size: 16px;">
+        {{ advice|safe }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Floating chatbot icon -->
+<a href="{% url 'chatbot' %}"><button class="chatbot-float">💬</button></a>
+
+<script>
+    let music = document.getElementById("bg-music");
+    let playing = false;
+
+    function toggleMusic() {
+        if (!playing) {
+            music.play();
+            playing = true;
+        }
+    }
+
+    function stopMusic() {
+        music.pause();
+        music.currentTime = 0;
+        playing = false;
+    }
+
+    function stopVoice() {
+        window.speechSynthesis.cancel();
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    function speakResult(lang) {
+        stopVoice();
+        const resultEl = document.getElementById('speak-result');
+        if (!resultEl) return;
+        const text = resultEl.innerText;
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+        window.speechSynthesis.speak(speech);
+    }
+
+    function startVoiceInput() {
+        const input = document.getElementById("symptoms");
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Your browser does not support voice input.");
+            return;
+        }
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = "en-IN";
+        recognition.onresult = function(event) {
+            input.value = event.results[0][0].transcript;
+        };
+        recognition.onerror = function(event) {
+            alert("Voice input error: " + event.error);
+        };
+        recognition.start();
+    }
+
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,hi',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
+    }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+{% endblock %}

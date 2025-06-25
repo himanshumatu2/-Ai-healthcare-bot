@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Healthcare Bot</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <!-- 🔵 NAVBAR: Clean horizontal -->
+    <nav class="navbar">
+        <ul class="nav-items">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'chatbot' %}">Chatbot</a></li>
+            <li><a href="{% url 'prediction' %}">Predict</a></li>
+            <li><a href="{% url 'map_view' %}">Hospitals</a></li>  <!-- ✅ FIXED HERE -->
+            {% if user.is_superuser %}
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- 🔻 TRANSLATE + DARK MODE Toggle placed below navbar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 20px;">
+        <div id="google_translate_element"></div>
+        <button class="mode-toggle" onclick="toggleDarkMode()">🌓 Toggle Mode</button>
+    </div>
+
+    <!-- 🔵 MAIN CONTENT -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 🔻 Translate & Toggle Scripts -->
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>

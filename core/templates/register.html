@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  body {
+    background-image: url("{% static 'images/bg-backup.jpg' %}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+</style>
+
+<h2>Sign Up</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Register</button>
+</form>
+<p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}
